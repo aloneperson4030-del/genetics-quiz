@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>آزمون ژنتیک | Mini App Prototype</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:#f5f5fb;color:#182033;
+    font-family:Tahoma,Arial,sans-serif;
+  }
+  .app{max-width:430px;min-height:100vh;margin:auto;background:#fff;position:relative;overflow:hidden}
+  .topbar{height:58px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee}
+  .topbar .title{text-align:center;font-weight:800;font-size:15px;line-height:1.35}
+  .topbar small{display:block;font-weight:400;color:#7a7f91;font-size:10px}
+  .close{color:#5645bd;font-size:13px}
+  .dots{width:30px;height:30px;border:1px solid #ddd;border-radius:50%;display:grid;place-items:center}
+  .screen{padding:22px 18px 28px;min-height:calc(100vh - 58px)}
+  .hero{text-align:center;padding-top:14px}
+  .dna{font-size:72px;line-height:1;margin:12px 0 20px}
+  h1{font-size:29px;margin:0 0 6px}
+  .subtitle{color:#73788b;font-size:15px;margin-bottom:22px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0}
+  .stat{background:#f7f7fc;border:1px solid #e5e5f2;border-radius:14px;padding:12px 5px}
+  .stat b{display:block;font-size:18px;margin-bottom:4px}.stat span{font-size:10px;color:#777}
+  .feature{display:flex;align-items:center;gap:10px;padding:10px 2px;font-size:12px}
+  .feature i{font-style:normal;color:#5645bd;font-size:19px}
+  button{font-family:inherit;cursor:pointer}
+  .primary{width:100%;border:0;border-radius:13px;padding:15px;background:#5b45c5;color:#fff;font-weight:800;font-size:15px;box-shadow:0 7px 16px #5b45c533}
+  .secondary{width:100%;border:1px solid #5b45c5;border-radius:13px;padding:13px;background:#fff;color:#5b45c5;font-weight:800;font-size:14px}
+  .progressrow{display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-bottom:10px}
+  .progress{height:8px;background:#ececf5;border-radius:20px;overflow:hidden;margin-bottom:30px}
+  .bar{height:100%;background:#5b45c5;border-radius:20px;transition:.25s}
+  .question{font-size:18px;line-height:2;font-weight:800;margin-bottom:20px}
+  .option{width:100%;display:flex;align-items:center;gap:10px;text-align:right;border:1px solid #dedfeb;background:#fff;border-radius:13px;padding:15px;margin:10px 0;font-size:14px;transition:.2s}
+  .option:hover{border-color:#8d7ce0;background:#faf9ff}
+  .circle{width:20px;height:20px;border:2px solid #a9adbc;border-radius:50%;flex:none}
+  .option.selected{border-color:#5b45c5;background:#f7f5ff}.option.selected .circle{border:6px solid #5b45c5}
+  .option.correct{border-color:#39a66a;background:#f0fbf5}.option.correct .circle{border:6px solid #39a66a}
+  .option.wrong{border-color:#e65b61;background:#fff3f3}.option.wrong .circle{border:6px solid #e65b61}
+  .explanation{margin-top:18px;padding:15px;border-radius:14px;background:#f7f7fc;border-right:4px solid #5b45c5;line-height:1.9;font-size:13px}
+  .feedback{font-size:20px;font-weight:900;margin:12px 0}.good{color:#25965d}.bad{color:#df4e55}
+  .actions{margin-top:20px}
+  .result{text-align:center}
+  .trophy{font-size:64px;margin-top:10px}.score{font-size:58px;font-weight:900;color:#5b45c5;margin:10px 0}
+  .scorelabel{color:#29935b;font-weight:800}
+  .resultgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:24px 0}
+  .resultbox{padding:14px 5px;border:1px solid #e4e4ef;border-radius:13px}.resultbox b{font-size:22px;display:block}.resultbox span{font-size:10px;color:#777}
+  .mistakes{margin-top:20px;text-align:right}
+  .mistake{padding:12px;border:1px solid #eee;border-radius:12px;margin:8px 0;font-size:12px;background:#fff}
+  .badge{display:inline-block;padding:4px 8px;border-radius:8px;background:#fff0f0;color:#d64d54;font-weight:800;margin-left:5px}
+  .nav{position:sticky;bottom:0;background:#fff;border-top:1px solid #eee;display:flex;justify-content:space-around;padding:10px 4px;font-size:10px;color:#777}
+  .nav span:first-child{color:#5b45c5;font-weight:800}
+  .note{font-size:10px;color:#8b8f9d;text-align:center;margin-top:12px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <span class="close">بستن</span>
+    <div class="title">Genetics Quiz<small>mini app • نمونه آزمایشی</small></div>
+    <span class="dots">•••</span>
+  </div>
+  <div id="content"></div>
+  <div class="nav"><span>⌂ خانه</span><span>▤ آزمون‌ها</span><span>♙ نتایج من</span><span>♙ حساب</span></div>
+</div>
+
+<script>
+const questions = [
+  {
+    q:"کدام مورد درباره سندرم ویلیامز صحیح است؟",
+    opts:["حذف بازوی کوتاه کروموزوم ۵","حذف بازوی کوتاه کروموزوم ۷","تریزومی کروموزوم ۲۱","وجود کروموزوم اضافی Y"],
+    ans:1,
+    exp:"طبق جزوه، سندرم ویلیامز به علت Microdeletion در بازوی کوتاه کروموزوم ۷ ایجاد می‌شود."
+  },
+  {
+    q:"سندروم Cri du chat با کدام تغییر کروموزومی مرتبط است؟",
+    opts:["حذف بازوی کوتاه کروموزوم ۵","حذف بازوی کوتاه کروموزوم ۷","تریزومی کروموزوم ۱۸","عدم جدایش در میوز II"],
+    ans:0,
+    exp:"طبق جزوه، Cri du chat ناشی از حذف در بازوی کوتاه کروموزوم ۵ است."
+  },
+  {
+    q:"کدام آنزیم در PCR به‌عنوان پلی‌مراز مقاوم به حرارت استفاده می‌شود؟",
+    opts:["DNA ligase","Taq polymerase","RNA polymerase","Reverse transcriptase"],
+    ans:1,
+    exp:"طبق جزوه، Taq polymerase پلی‌مرازی است که در برابر حرارت مقاوم است و در PCR استفاده می‌شود."
+  },
+  {
+    q:"PCR-ARMS در جزوه بیشتر برای چه منظوری معرفی شده است؟",
+    opts:["تشخیص اختصاصی جهش‌های نقطه‌ای","اندازه‌گیری فشار خون","تشخیص کم‌خونی","تعیین گروه خونی"],
+    ans:0,
+    exp:"طبق جزوه، PCR-ARMS برای تشخیص اختصاصی جهش‌های نقطه‌ای به‌کار می‌رود."
+  },
+  {
+    q:"طبق جزوه، سندرم ژاکوب (47,XYY) حاصل عدم جدایش در کدام مرحله است؟",
+    opts:["میوز I","میوز II","میتوز","مرحله S چرخه سلولی"],
+    ans:1,
+    exp:"طبق جزوه، سندرم ژاکوب با کاریوتیپ 47,XYY حاصل عدم جدایش کروموزوم‌ها در میوز II است."
+  }
+];
+
+let current=0, score=0, answered=false, selected=-1, mistakes=[];
+
+function renderStart(){
+ document.getElementById("content").innerHTML=`
+ <div class="screen">
+  <div class="hero">
+   <div class="dna">🧬</div>
+   <h1>آزمون ژنتیک</h1>
+   <div class="subtitle">مرور سریع ژنتیک</div>
+   <div class="stats">
+    <div class="stat"><b>${questions.length}</b><span>تعداد سؤال</span></div>
+    <div class="stat"><b>تستی</b><span>نوع آزمون</span></div>
+    <div class="stat"><b>فوری</b><span>پاسخ تشریحی</span></div>
+   </div>
+   <div class="feature"><i>✓</i> نمایش فوری درست یا غلط</div>
+   <div class="feature"><i>✓</i> پاسخ تشریحی بعد از هر سؤال</div>
+   <div class="feature"><i>✓</i> نتیجه و درصد در پایان آزمون</div>
+   <div style="height:18px"></div>
+   <button class="primary" onclick="start()">شروع آزمون　▶</button>
+   <div class="note">این نسخه صرفاً نمونه اولیه رابط و منطق آزمون است؛ سؤال‌ها از فایل «نکات مرور سریع ژنتیک» انتخاب شده‌اند.</div>
+  </div>
+ </div>`;
+}
+
+function start(){current=0;score=0;answered=false;selected=-1;mistakes=[];renderQuestion();}
+
+function renderQuestion(){
+ const x=questions[current];
+ const pct=((current)/questions.length)*100;
+ document.getElementById("content").innerHTML=`
+ <div class="screen">
+  <div class="progressrow"><span>سؤال ${current+1} از ${questions.length}</span><span>⏱ بدون تایمر در نسخه آزمایشی</span></div>
+  <div class="progress"><div class="bar" style="width:${pct}%"></div></div>
+  <div class="question">${x.q}</div>
+  <div id="options">${x.opts.map((o,i)=>`
+   <button class="option" id="opt${i}" onclick="choose(${i})">
+    <span class="circle"></span><span>${String.fromCharCode(1575+i)}) ${o}</span>
+   </button>`).join("")}</div>
+  <div id="feedback"></div>
+  <div class="actions" id="actions"></div>
+ </div>`;
+}
+
+function choose(i){
+ if(answered) return;
+ answered=true;selected=i;
+ const x=questions[current];
+ const opts=document.querySelectorAll(".option");
+ opts.forEach((el,idx)=>{
+   if(idx===x.ans) el.classList.add("correct");
+   if(idx===i && i!==x.ans) el.classList.add("wrong");
+ });
+ if(i===x.ans){
+   score++;
+   document.getElementById("feedback").innerHTML=`<div class="feedback good">✅ درست!</div>`;
+ }else{
+   mistakes.push({n:current+1,q:x.q,user:x.opts[i],correct:x.opts[x.ans]});
+   document.getElementById("feedback").innerHTML=`<div class="feedback bad">❌ نادرست!</div>`;
+ }
+ document.getElementById("feedback").innerHTML += `
+   <div class="explanation"><b>پاسخ صحیح:</b> ${String.fromCharCode(1575+x.ans)}) ${x.opts[x.ans]}<br><br>
+   <b>📖 پاسخ تشریحی:</b><br>${x.exp}</div>`;
+ document.getElementById("actions").innerHTML=`
+   <button class="primary" onclick="next()">${current===questions.length-1?"مشاهده نتیجه":"سؤال بعدی"}　→</button>`;
+}
+
+function next(){
+ if(!answered) return;
+ if(current<questions.length-1){current++;answered=false;selected=-1;renderQuestion();}
+ else renderResult();
+}
+
+function renderResult(){
+ const percent=Math.round(score/questions.length*100);
+ document.getElementById("content").innerHTML=`
+ <div class="screen result">
+  <div class="trophy">🏆</div>
+  <h1>نتیجه آزمون</h1>
+  <div class="score">${percent}%</div>
+  <div class="scorelabel">${percent>=80?"عالی!":"خوب است؛ مرور سؤالات غلط می‌تواند کمک کند."}</div>
+  <div class="resultgrid">
+   <div class="resultbox"><b>${score}</b><span>پاسخ صحیح ✓</span></div>
+   <div class="resultbox"><b>${questions.length-score}</b><span>پاسخ غلط ✕</span></div>
+   <div class="resultbox"><b>${questions.length}</b><span>تعداد سؤالات</span></div>
+  </div>
+  ${mistakes.length?`<div class="mistakes"><h3>مرور سؤالات غلط</h3>${mistakes.map(m=>`
+    <div class="mistake"><span class="badge">سؤال ${m.n}</span>${m.q}<br><br>
+    پاسخ شما: ${m.user}<br>پاسخ صحیح: <b>${m.correct}</b></div>`).join("")}</div>`:"<div class='explanation'>🎉 همه سؤالات را درست پاسخ دادی.</div>"}
+  <div style="height:14px"></div>
+  <button class="primary" onclick="start()">شرکت مجدد در آزمون　↻</button>
+  <div style="height:9px"></div>
+  <button class="secondary" onclick="renderStart()">بازگشت به صفحه اصلی　⌂</button>
+ </div>`;
+}
+
+renderStart();
+</script>
+</body>
+</html>
